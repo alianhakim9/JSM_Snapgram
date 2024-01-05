@@ -1,6 +1,6 @@
 import { AuthLayout } from "./_auth/AuthLayout";
-import { SignInForm } from "./_auth/forms/SignInForm";
-import { SignUpForm } from "./_auth/forms/SignUpForm";
+import SignInForm from "./_auth/forms/SignInForm";
+import SignUpForm from "./_auth/forms/SignUpForm";
 import RootLayout from "./_root/RootLayout";
 import { Home } from "./_root/pages";
 import "./globals.css";
