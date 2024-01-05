@@ -1,9 +1,16 @@
 import "./globals.css";
 
+import { Routes, Route } from "react-router-dom";
+
 export const App = () => {
   return (
-    <div id="root">
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
-    </div>
+    <main className="flex h-screen">
+      <Routes>
+        {/* public routes */}
+        <Route path="/sign-in" element={<SignInForm />} />
+        {/* private routes */}
+        <Route index element={<Home />} />
+      </Routes>
+    </main>
   );
 };
