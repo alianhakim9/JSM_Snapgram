@@ -11,17 +11,15 @@ export async function createUserAccount(user: INewUser) {
       user.name
     );
 
-    if (!newAccount) {
-      throw new Error();
-    }
+    if (!newAccount) throw Error;
 
     const avatarUrl = avatars.getInitials(user.name);
 
     const newUser = await saveUserToDB({
       accountId: newAccount.$id,
       name: newAccount.name,
-      username: user.username,
       email: newAccount.email,
+      username: user.username,
       imageUrl: avatarUrl,
     });
 
@@ -42,7 +40,7 @@ export async function saveUserToDB(user: {
   try {
     const newUser = await databases.createDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.usersCollectionId,
+      appwriteConfig.userCollectionId,
       ID.unique(),
       user
     );
@@ -50,7 +48,7 @@ export async function saveUserToDB(user: {
     return newUser;
   } catch (error) {
     console.log(error);
-    throw error;
+    return error;
   }
 }
 
@@ -64,25 +62,42 @@ export async function signInAccount(user: { email: string; password: string }) {
   }
 }
 
-export async function getCurrentUser() {
+export async function getAccount() {
   try {
     const currentAccount = await account.get();
-    if (!currentAccount) {
-      throw new Error();
-    }
+    return currentAccount;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function getCurrentUser() {
+  try {
+    const currentAccount = await getAccount();
+
+    if (!currentAccount) throw Error;
 
     const currentUser = await databases.listDocuments(
       appwriteConfig.databaseId,
-      appwriteConfig.usersCollectionId,
+      appwriteConfig.userCollectionId,
       [Query.equal("accountId", currentAccount.$id)]
     );
 
-    if (!currentUser) {
-      throw Error;
-    }
+    if (!currentUser) throw Error;
 
     return currentUser.documents[0];
   } catch (error) {
     console.log(error);
+    return null;
+  }
+}
+
+export async function signOutAcount() {
+  try {
+    const session = await account.deleteSession("current");
+    return session;
+  } catch (error) {
+    console.log(error);
+    return error;
   }
 }

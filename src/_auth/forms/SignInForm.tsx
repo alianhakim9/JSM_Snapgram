@@ -12,50 +12,54 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
 import { useSignInAccount } from "@/lib/react-query/queriesAndMutation";
-import { SignInValidation, SignUpValidationSchema } from "@/lib/validation";
+import { SignInValidationSchema } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import * as z from "zod";
 
-const SignInForm = () => {
+export const SignInForm = () => {
   const { toast } = useToast();
   const { checkAuthUser } = useUserContext();
   const navigate = useNavigate();
 
-  const { mutateAsync: signInAccount, isPending: isSigningIn } =
-    useSignInAccount();
+  // Query
+  const { mutateAsync: signInAccount, isPending } = useSignInAccount();
 
   // 1. Define your form.
-  const form = useForm<z.infer<typeof SignUpValidationSchema>>({
-    resolver: zodResolver(SignUpValidationSchema),
+  const form = useForm<z.infer<typeof SignInValidationSchema>>({
+    resolver: zodResolver(SignInValidationSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
   // 2. Define a submit handler.
-  async function onSubmit(values: z.infer<typeof SignInValidation>) {
+  async function handleSignIn(user: z.infer<typeof SignInValidationSchema>) {
     // Do something with the form values.
-    const session = await signInAccount({
-      email: values.email,
-      password: values.password,
-    });
+    const session = await signInAccount(user);
+
     if (!session) {
-      return toast({
+      toast({
         title: "Sign in failed. Please try again.",
       });
+      return;
     }
+
     const isLoggedIn = await checkAuthUser();
+
     if (isLoggedIn) {
       form.reset();
       navigate("/");
     } else {
-      return toast({
+      toast({
         title: "Sign in failed. Please try again",
       });
+      return;
     }
   }
+
+  const onInvalid = (error: unknown) => console.log(error);
 
   return (
     <Form {...form}>
@@ -68,7 +72,7 @@ const SignInForm = () => {
           Welcome back, please enter your details
         </p>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(handleSignIn, onInvalid)}
           className="space-y-4 flex-col gap-2 w-full mt-4"
         >
           <FormField
@@ -78,12 +82,7 @@ const SignInForm = () => {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input
-                    type="email"
-                    className="shad-input"
-                    {...field}
-                    autoComplete="username"
-                  />
+                  <Input type="email" className="shad-input" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -96,19 +95,14 @@ const SignInForm = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input
-                    type="password"
-                    className="shad-input"
-                    autoComplete="current-password"
-                    {...field}
-                  />
+                  <Input type="password" className="shad-input" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
           <Button type="submit" className="shad-button_primary w-full">
-            {isSigningIn ? <Loader /> : "Login"}
+            {isPending ? <Loader /> : "Login"}
           </Button>
           <p className="text-small-regular text-light-2 text-center mt-2">
             Don't have an accont?
@@ -121,5 +115,3 @@ const SignInForm = () => {
     </Form>
   );
 };
-
-export default SignInForm;

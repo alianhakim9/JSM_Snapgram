@@ -42,9 +42,9 @@ const SignUpForm = () => {
     },
   });
   // 2. Define a submit handler.
-  async function onSubmit(values: z.infer<typeof SignUpValidationSchema>) {
-    // Do something with the form values.
-    const newUser = await createUserAccount(values);
+  async function onSubmit(user: z.infer<typeof SignUpValidationSchema>) {
+    // Do something with the form user.
+    const newUser = await createUserAccount(user);
     if (!newUser) {
       return toast({
         title: "Sign up failed. Please try again",
@@ -52,8 +52,8 @@ const SignUpForm = () => {
     }
 
     const session = await signInAccount({
-      email: values.email,
-      password: values.password,
+      email: user.email,
+      password: user.password,
     });
 
     if (!session) {
