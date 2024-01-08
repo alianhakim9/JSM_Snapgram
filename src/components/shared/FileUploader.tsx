@@ -9,7 +9,7 @@ type FileuploaderProps = {
 
 const FileUploader = ({ fieldChange, mediaUrl }: FileuploaderProps) => {
   const [file, setFile] = useState<File[]>([]);
-  const [fileUrl, setFileUrl] = useState("");
+  const [fileUrl, setFileUrl] = useState(mediaUrl);
 
   const onDrop = useCallback(
     (acceptedFiles: FileWithPath[]) => {
@@ -17,25 +17,21 @@ const FileUploader = ({ fieldChange, mediaUrl }: FileuploaderProps) => {
       fieldChange(acceptedFiles);
       setFileUrl(URL.createObjectURL(acceptedFiles[0]));
     },
-    [fieldChange]
+    [fieldChange, file]
   );
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
       "image/*": [".png", ".jpeg", ".jpg", ".svg"],
     },
   });
+
   return (
     <div
       {...getRootProps()}
       className="flex flex-center flex-col bg-dark-3 rounded-xl cursor-pointer"
     >
       <input {...getInputProps()} className="cursor-pointer" />
-      {/* {fileUrl ? ( 
-        <p>Drop the files here ...</p>
-      ) : (
-        <p>Drag 'n' drop some files here, or click to select files</p>
-      )} */}
       {fileUrl ? (
         <>
           <div className="flex flex-1 justify-center w-full p-5 lg:p-10">
