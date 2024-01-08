@@ -16,6 +16,7 @@ const FileUploader = ({ fieldChange, mediaUrl }: FileuploaderProps) => {
       setFile(acceptedFiles);
       fieldChange(acceptedFiles);
       setFileUrl(URL.createObjectURL(acceptedFiles[0]));
+      console.log(file);
     },
     [fieldChange, file]
   );
