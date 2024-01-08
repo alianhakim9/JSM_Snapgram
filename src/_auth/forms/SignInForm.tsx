@@ -43,7 +43,6 @@ export const SignInForm = () => {
       toast({
         title: "Sign in failed. Please try again.",
       });
-      return;
     }
 
     const isLoggedIn = await checkAuthUser();
@@ -54,8 +53,9 @@ export const SignInForm = () => {
     } else {
       toast({
         title: "Sign in failed. Please try again",
+        description: "Check your email or password",
+        variant: "destructive",
       });
-      return;
     }
   }
 

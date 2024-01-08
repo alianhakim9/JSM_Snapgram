@@ -23,15 +23,9 @@ import * as z from "zod";
 
 const SignUpForm = () => {
   const { toast } = useToast();
-  const { checkAuthUser } = useUserContext();
   const navigate = useNavigate();
+  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
 
-  const { mutateAsync: createUserAccount, isPending: isCreatingUser } =
-    useCreateUserAccount();
-
-  const { mutateAsync: signInAccount } = useSignInAccount();
-
-  // 1. Define your form.
   const form = useForm<z.infer<typeof SignUpValidationSchema>>({
     resolver: zodResolver(SignUpValidationSchema),
     defaultValues: {
@@ -41,38 +35,55 @@ const SignUpForm = () => {
       password: "",
     },
   });
-  // 2. Define a submit handler.
-  async function onSubmit(user: z.infer<typeof SignUpValidationSchema>) {
-    // Do something with the form user.
-    const newUser = await createUserAccount(user);
-    if (!newUser) {
-      return toast({
-        title: "Sign up failed. Please try again",
+
+  // Queries
+  const { mutateAsync: createUserAccount, isPending: isCreatingAccount } =
+    useCreateUserAccount();
+
+  const { mutateAsync: signInAccount, isPending: isSignInUser } =
+    useSignInAccount();
+
+  const handleSignUp = async (user: z.infer<typeof SignUpValidationSchema>) => {
+    try {
+      const newUser = await createUserAccount(user);
+
+      if (!newUser) {
+        toast({
+          title: "Sign up failed. Please try again",
+        });
+        return;
+      }
+
+      const session = await signInAccount({
+        email: user.email,
+        password: user.password,
       });
+
+      if (!session) {
+        toast({
+          title: "Something went wrong. Please login your new account",
+        });
+
+        navigate("/sign-in");
+
+        return;
+      }
+
+      const isLoggedIn = await checkAuthUser();
+
+      if (isLoggedIn) {
+        form.reset();
+        navigate("/");
+      } else {
+        toast({
+          title: "Sign up failed. Please try again",
+        });
+        return;
+      }
+    } catch (error) {
+      console.log({ error });
     }
-
-    const session = await signInAccount({
-      email: user.email,
-      password: user.password,
-    });
-
-    if (!session) {
-      return toast({
-        title: "Sign in failed. Please try again.",
-      });
-    }
-
-    const isLoggedIn = await checkAuthUser();
-
-    if (isLoggedIn) {
-      form.reset();
-      navigate("/");
-    } else {
-      return toast({
-        title: "Sign up failed. Please try again",
-      });
-    }
-  }
+  };
 
   return (
     <Form {...form}>
@@ -82,10 +93,10 @@ const SignUpForm = () => {
           Create a new account
         </h2>
         <p className="text-light-3 small-medium md:base-regular mt-2">
-          To use snapgram, please enter your details
+          To use couplegram, please enter your details
         </p>
         <form
-          onSubmit={form.handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(handleSignUp)}
           className="space-y-4 flex-col gap-2 w-full mt-4"
         >
           <FormField
@@ -141,7 +152,11 @@ const SignUpForm = () => {
             )}
           />
           <Button type="submit" className="shad-button_primary w-full">
-            {isCreatingUser ? <Loader /> : "Sign Up"}
+            {isCreatingAccount || isSignInUser || isUserLoading ? (
+              <Loader />
+            ) : (
+              "Sign Up"
+            )}
           </Button>
           <p className="text-small-regular text-light-2 text-center mt-2">
             Already have an accont?

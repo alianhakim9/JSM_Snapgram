@@ -9,25 +9,33 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/AuthContext";
+import {
+  useCreatePost,
+  useUpdatePost,
+} from "@/lib/react-query/queriesAndMutation";
 import { PostValidation } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Models } from "appwrite";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import * as z from "zod";
 import FileUploader from "../shared/FileUploader";
+import Loader from "../shared/Loader";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/use-toast";
-import { useNavigate } from "react-router-dom";
-import { useCreatePost } from "@/lib/react-query/queriesAndMutation";
-import Loader from "../shared/Loader";
 
 type PostFormProps = {
-  post?: Models.Document;
+  post?: Models.Document | undefined | unknown;
+  action: "Create" | "Update";
 };
 
-const PostForm = ({ post }: PostFormProps) => {
+const PostForm = ({ post, action }: PostFormProps) => {
   const { mutateAsync: createPost, isPending: isLoadingCreate } =
     useCreatePost();
+  const { mutateAsync: updatePost, isPending: isLoadingUpdate } =
+    useUpdatePost();
+
+  const currentPost: Models.Document = post as Models.Document;
 
   const { user } = useUserContext();
   const { toast } = useToast();
@@ -36,14 +44,31 @@ const PostForm = ({ post }: PostFormProps) => {
   const form = useForm<z.infer<typeof PostValidation>>({
     resolver: zodResolver(PostValidation),
     defaultValues: {
-      caption: post ? post?.caption : "",
+      caption: currentPost ? currentPost?.caption : "",
       file: [],
-      location: post ? post?.location : "",
-      tags: post ? post?.tags.join(",") : "",
+      location: currentPost ? currentPost?.location : "",
+      tags: currentPost ? currentPost?.tags.join(",") : "",
     },
   });
 
   async function onSubmit(values: z.infer<typeof PostValidation>) {
+    if (currentPost && action === "Update") {
+      const updatedPost = await updatePost({
+        ...values,
+        postId: currentPost?.$id,
+        imageId: currentPost?.imageId,
+        imageUrl: currentPost?.imageUrl,
+      });
+
+      if (!updatedPost) {
+        toast({
+          title: "Please try again.",
+        });
+      }
+
+      return navigate(`/post/${currentPost.$id}`);
+    }
+
     const newPost = await createPost({
       ...values,
       userId: user.id,
@@ -56,6 +81,7 @@ const PostForm = ({ post }: PostFormProps) => {
     }
     navigate("/");
   }
+
   return (
     <Form {...form}>
       <form
@@ -88,7 +114,7 @@ const PostForm = ({ post }: PostFormProps) => {
               <FormControl>
                 <FileUploader
                   fieldChange={field.onChange}
-                  mediaUrl={post?.imageUrl}
+                  mediaUrl={currentPost?.imageUrl}
                 />
               </FormControl>
               <FormMessage className="shad-form_message" />
@@ -129,14 +155,20 @@ const PostForm = ({ post }: PostFormProps) => {
           )}
         />
         <div className="flex gap-4 items-center justify-end">
-          <Button type="button" className="shad-button_dark_4">
+          <Button
+            type="button"
+            className="shad-button_dark_4"
+            onClick={() => navigate("/")}
+          >
             Cancel
           </Button>
           <Button
             type="submit"
             className="shad-button_primary whitespace-nowrap"
+            disabled={isLoadingCreate || isLoadingUpdate}
           >
-            {isLoadingCreate ? <Loader /> : "Submit"}
+            {isLoadingCreate || (isLoadingUpdate && <Loader />)}
+            {action} Post
           </Button>
         </div>
       </form>

@@ -24,6 +24,11 @@ const Home = () => {
               ))}
             </ul>
           )}
+          {isErrorPosts && (
+            <p className="text-light-4 mt-10 text-center w-full">
+              Something went wrong
+            </p>
+          )}
         </div>
       </div>
     </div>
