@@ -57,7 +57,11 @@ const Profile = () => {
           </div>
           <p className="mt-5">{user.bio}</p>
         </div>
-        {currentUser?.$id === user.id ? <EditButton /> : <FollowButton />}
+        {currentUser?.$id === user.id ? (
+          <EditButton userId={currentUser.$id} />
+        ) : (
+          <FollowButton />
+        )}
       </div>
 
       <div className="max-w-5xl flex w-full justify-between items-center">

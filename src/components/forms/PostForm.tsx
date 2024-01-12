@@ -66,7 +66,7 @@ const PostForm = ({ post, action }: PostFormProps) => {
         });
       }
 
-      return navigate(`/post/${currentPost.$id}`);
+      return navigate(`/posts/${currentPost.$id}`);
     }
 
     const newPost = await createPost({

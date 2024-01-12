@@ -1,4 +1,4 @@
-import { INewPost, INewUser, IUpdatePost } from "@/types";
+import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
 import { ID, Models, Query } from "appwrite";
 import { account, appwriteConfig, avatars, databases, storage } from "./config";
 
@@ -419,6 +419,77 @@ export async function getUserPosts(userId?: string) {
     if (!usersPosts) throw Error;
 
     return usersPosts;
+  } catch (error) {
+    console.log({ error });
+    return error;
+  }
+}
+
+export async function getUserById(userId?: string) {
+  if (!userId) return;
+  try {
+    const user = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId
+    );
+
+    if (!user) throw Error;
+
+    return user;
+  } catch (error) {
+    console.log({ error });
+    return error;
+  }
+}
+
+export async function updateUser(user: IUpdateUser) {
+  const hasFileToUpdate = user.file.length > 0;
+  try {
+    let image = {
+      imageUrl: user.imageUrl,
+      imageId: user.imageId,
+    };
+
+    if (hasFileToUpdate) {
+      const uploadedFile = (await uploadFile(user.file[0])) as Models.Document;
+
+      if (!uploadedFile) throw Error;
+
+      const fileUrl: URL | unknown = getFilePreview(uploadedFile.$id);
+
+      if (!fileUrl) {
+        await deleteFile(uploadedFile.$id);
+        throw Error;
+      }
+
+      image = {
+        ...image,
+        imageUrl: fileUrl as URL,
+        imageId: uploadedFile.$id,
+      };
+    }
+
+    const updatedUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      user.userId,
+      {
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        bio: user.bio,
+        imageUrl: image.imageUrl,
+        imageId: image.imageId,
+      }
+    );
+
+    if (!updatedUser) {
+      await deleteFile(user.imageId);
+      throw Error;
+    }
+
+    return updatedUser;
   } catch (error) {
     console.log({ error });
     return error;
