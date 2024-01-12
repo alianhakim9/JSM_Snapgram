@@ -48,3 +48,22 @@ export const bottombarLinks = [
     label: "Create",
   },
 ];
+
+export const profileTabMenus = [
+  {
+    img: "/assets/icons/posts.svg",
+    label: "Posts",
+    generateUrl: (id: string) => {
+      return `/profile/${id}`;
+    },
+    position: "s",
+  },
+  {
+    img: "/assets/icons/like.svg",
+    label: "Liked",
+    generateUrl: (id: string) => {
+      return `/profile/${id}/liked-posts`;
+    },
+    position: "e",
+  },
+];

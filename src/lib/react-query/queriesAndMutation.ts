@@ -15,6 +15,8 @@ import {
   getInfinitePosts,
   getPostById,
   getRecentPost,
+  getRelatedPosts,
+  getUserPosts,
   likePost,
   savePost,
   searchPost,
@@ -199,5 +201,21 @@ export const useSearchPost = (searchTerm: string) => {
     queryKey: [QUERY_KEYS.SEARCH_POSTS, searchTerm],
     queryFn: () => searchPost(searchTerm),
     enabled: !!searchTerm,
+  });
+};
+
+export const useGetRelatedPosts = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_POSTS, userId],
+    queryFn: () => getRelatedPosts(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useGetUserPosts = (userId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_POSTS, userId],
+    queryFn: () => getUserPosts(userId),
+    enabled: !!userId,
   });
 };

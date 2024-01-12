@@ -15,32 +15,35 @@ const GridPostList = ({
   showStats = true,
 }: GridPostListProps) => {
   const { user } = useUserContext();
+
   return (
     <ul className="grid-container">
-      {posts.map((post, index) => (
-        <li key={`post-${index}`} className="relative">
-          <Link to={`/posts/${post.$id}`} className="grid-post_link">
-            <img
-              src={post.imageUrl}
-              alt="Post"
-              className="h-full w-ful object-cover"
-            />
-          </Link>
-          <div className="grid-post_user">
-            {showUser && (
-              <div className="flex items-center justify-start gap-1 flex-1">
+      {posts === undefined
+        ? "Undefined"
+        : posts.map((post, index) => (
+            <li key={`post-${index}`} className="relative min-w-80 h-80">
+              <Link to={`/posts/${post.$id}`} className="grid-post_link">
                 <img
-                  src={post.creator.imageUrl}
-                  alt="creator"
-                  className="h-8 w-8 rounded-full"
+                  src={post.imageUrl}
+                  alt="Post"
+                  className="h-full w-full object-cover"
                 />
-                <p className="line-clamp-1 ">{post.creator.name}</p>
+              </Link>
+              <div className="grid-post_user">
+                {showUser && (
+                  <div className="flex items-center justify-start gap-1 flex-1">
+                    <img
+                      src={post.creator.imageUrl}
+                      alt="creator"
+                      className="h-8 w-8 rounded-full"
+                    />
+                    <p className="line-clamp-1 ">{post.creator.name}</p>
+                  </div>
+                )}
+                {showStats && <PostStats post={post} userId={user.id} />}
               </div>
-            )}
-            {showStats && <PostStats post={post} userId={user.id} />}
-          </div>
-        </li>
-      ))}
+            </li>
+          ))}
     </ul>
   );
 };

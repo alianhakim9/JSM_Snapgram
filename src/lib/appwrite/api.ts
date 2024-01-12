@@ -328,22 +328,24 @@ export async function updatePost(post: IUpdatePost) {
 }
 
 export async function deletePost(postId: string, imageId: string) {
-  if (!postId || !imageId) {
-    throw Error;
-  }
+  if (!postId || !imageId) return;
 
   try {
-    await databases.deleteDocument(
+    const statusCode = await databases.deleteDocument(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
       postId
     );
 
+    if (!statusCode) throw Error;
+
+    await deleteFile(imageId);
+
     return {
       status: "ok",
     };
   } catch (error) {
-    console.log(error);
+    console.log({ error });
     return error;
   }
 }
@@ -369,7 +371,6 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
     console.log(error);
     return error;
   }
-  // current : 5:21:00
 }
 
 export async function searchPost(searchTerm: string) {
@@ -385,6 +386,41 @@ export async function searchPost(searchTerm: string) {
     return posts;
   } catch (error) {
     console.log(error);
+    return error;
+  }
+}
+
+export async function getRelatedPosts(userId: string) {
+  try {
+    const relatedPosts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!relatedPosts) throw Error;
+
+    return relatedPosts;
+  } catch (error) {
+    console.log({ error });
+    return error;
+  }
+}
+
+export async function getUserPosts(userId?: string) {
+  if (!userId) return;
+  try {
+    const usersPosts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!usersPosts) throw Error;
+
+    return usersPosts;
+  } catch (error) {
+    console.log({ error });
     return error;
   }
 }
