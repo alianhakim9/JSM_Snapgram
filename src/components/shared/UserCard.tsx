@@ -1,4 +1,6 @@
 import { Models } from "appwrite";
+import { Link } from "react-router-dom";
+
 import { Button } from "../ui/button";
 
 type UserCardProps = {
@@ -6,24 +8,27 @@ type UserCardProps = {
 };
 
 const UserCard = ({ user }: UserCardProps) => {
-  if (!user) return;
-
   return (
-    <div className="user-card">
-      <div className="flex flex-col items-center justify-center">
-        <img
-          src={user.imageUrl}
-          alt="User"
-          width={100}
-          className="rounded-full"
-        />
-        <h2 className="h3-bold md:h2-bold text-center w-full mt-5">
+    <Link to={`/profile/${user.$id}`} className="user-card">
+      <img
+        src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+        alt="creator"
+        className="rounded-full w-14 h-14"
+      />
+
+      <div className="flex-center flex-col gap-1">
+        <p className="base-medium text-light-1 text-center line-clamp-1">
           {user.name}
-        </h2>
-        <p className="text-primary-500">@{user.username}</p>
-        <Button className="shad-button_primary mt-5">Follow</Button>
+        </p>
+        <p className="small-regular text-light-3 text-center line-clamp-1">
+          @{user.username}
+        </p>
       </div>
-    </div>
+
+      <Button type="button" size="sm" className="shad-button_primary px-5">
+        Follow
+      </Button>
+    </Link>
   );
 };
 
