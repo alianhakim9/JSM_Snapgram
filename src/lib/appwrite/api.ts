@@ -516,3 +516,20 @@ export async function getSavedPosts(userId?: string) {
     return error;
   }
 }
+
+export async function getUsers(limit = 10) {
+  try {
+    const users = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      [Query.limit(limit), Query.orderDesc("$createdAt")]
+    );
+
+    if (!users) throw Error;
+
+    return users;
+  } catch (error) {
+    console.log({ error });
+    return error;
+  }
+}

@@ -19,6 +19,7 @@ import {
   getSavedPosts,
   getUserById,
   getUserPosts,
+  getUsers,
   likePost,
   savePost,
   searchPost,
@@ -250,5 +251,12 @@ export const useGetSavedPosts = (userId?: string) => {
     queryKey: [QUERY_KEYS.GET_USER_POSTS],
     queryFn: () => getSavedPosts(userId),
     enabled: !!userId,
+  });
+};
+
+export const useGetUsers = (limit?: number) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USERS],
+    queryFn: () => getUsers(limit),
   });
 };
