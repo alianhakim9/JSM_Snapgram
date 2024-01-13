@@ -16,6 +16,7 @@ import {
   getPostById,
   getRecentPost,
   getRelatedPosts,
+  getSavedPosts,
   getUserById,
   getUserPosts,
   likePost,
@@ -241,5 +242,13 @@ export const useUpdateUser = () => {
         queryKey: [QUERY_KEYS.GET_CURRENT_USER, id],
       });
     },
+  });
+};
+
+export const useGetSavedPosts = (userId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_POSTS],
+    queryFn: () => getSavedPosts(userId),
+    enabled: !!userId,
   });
 };

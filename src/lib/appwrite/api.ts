@@ -495,3 +495,24 @@ export async function updateUser(user: IUpdateUser) {
     return error;
   }
 }
+
+export async function getSavedPosts(userId?: string) {
+  if (!userId) return;
+  try {
+    const savedPosts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.saveCollectionId,
+      [Query.equal("user", userId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!savedPosts) throw Error;
+    const mPosts = savedPosts.documents.map((item) => {
+      return item.post;
+    });
+
+    return mPosts;
+  } catch (error) {
+    console.log({ error });
+    return error;
+  }
+}
